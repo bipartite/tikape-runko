@@ -1,39 +1,70 @@
 package tikape.runko;
 
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import spark.ModelAndView;
+import spark.Request;
+import spark.Response;
 import static spark.Spark.*;
+import spark.TemplateViewRoute;
 import spark.template.thymeleaf.ThymeleafTemplateEngine;
 import tikape.runko.database.Database;
-import tikape.runko.database.OpiskelijaDao;
+import tikape.runko.database.KeskustelualueDao;
+import tikape.runko.database.KeskusteluavausDao;
+import tikape.runko.database.VastausDao;
+import tikape.runko.domain.Keskustelualue;
+import tikape.runko.domain.Keskusteluavaus;
 
 public class Main {
+    
+    private void laskeViestit(List<Keskustelualue> alueet, KeskustelualueDao alueDao, KeskusteluavausDao avausDao, VastausDao vastausDao) throws SQLException{
+        
+    }
 
     public static void main(String[] args) throws Exception {
-        Database database = new Database("jdbc:sqlite:opiskelijat.db");
-        database.init();
+        Database database = new Database("jdbc:sqlite:forum.db");
+        
+        KeskustelualueDao alueDao = new KeskustelualueDao(database);
+        KeskusteluavausDao avausDao = new KeskusteluavausDao(database);
+        VastausDao vastausDao = new VastausDao(database);
 
-        OpiskelijaDao opiskelijaDao = new OpiskelijaDao(database);
+        get("/", new TemplateViewRoute() {
+            @Override
+            public ModelAndView handle(Request req, Response res) throws Exception {
+                HashMap map = new HashMap<>();
+                
+                List<Keskustelualue> alueet = alueDao.findAll();
+                
+                // Calculate the amount of messages in each Keskustelualue and save it
+                laskeViestit(alueet);
+                
+                map.put("alueet", alueet);
+                
+                return new ModelAndView(map, "index");
+            }
+            
+            public void laskeViestit(List<Keskustelualue> alueet) throws SQLException{
+                for (Keskustelualue keskustelualue : alueet) {
+                    int viestejaAlueessa = 0;
 
-        get("/", (req, res) -> {
-            HashMap map = new HashMap<>();
-            map.put("viesti", "tervehdys");
+                    int alueId = keskustelualue.getId();
 
-            return new ModelAndView(map, "index");
-        }, new ThymeleafTemplateEngine());
+                    List<Keskusteluavaus> avaukset = avausDao.findAllFromAlue(alueId);
 
-        get("/opiskelijat", (req, res) -> {
-            HashMap map = new HashMap<>();
-            map.put("opiskelijat", opiskelijaDao.findAll());
+                    for (Keskusteluavaus keskusteluavaus : avaukset) {
+                        int avausId = keskusteluavaus.getId();
 
-            return new ModelAndView(map, "opiskelijat");
-        }, new ThymeleafTemplateEngine());
+                        int viestejaAvauksessa = vastausDao.findTheAmountOfMessagesUnder(avausId);
 
-        get("/opiskelijat/:id", (req, res) -> {
-            HashMap map = new HashMap<>();
-            map.put("opiskelija", opiskelijaDao.findOne(Integer.parseInt(req.params("id"))));
+                        viestejaAlueessa += viestejaAvauksessa;
+                    }
 
-            return new ModelAndView(map, "opiskelija");
+                    keskustelualue.setViestimaara(viestejaAlueessa);
+                }
+            }
         }, new ThymeleafTemplateEngine());
     }
 }
