@@ -67,11 +67,24 @@ public class Main {
         
              
         get("/keskustelualue/:id", (req, res) ->{
-        HashMap map = new HashMap<>();
-        map.put("keskustelualue", alueDao.findOne(Integer.parseInt(req.params(":id"))));
-        
-        return new ModelAndView(map, "keskustelualue");
+            HashMap map = new HashMap<>();
+            Keskustelualue alue = alueDao.findOne(Integer.parseInt(req.params(":id")));
+            map.put("keskustelualue", alue);
+
+            map.put("avaukset", avausDao.findAllFromAlue(alue.getId()));
+
+            return new ModelAndView(map, "keskustelualue");
         }, new ThymeleafTemplateEngine());
     
+        get("/keskusteluavaus/:id", (req, res) -> {
+            HashMap<String, Object> data = new HashMap<>();
+            Keskusteluavaus avaus = avausDao.findOne(Integer.parseInt(req.params(":id")));
+            
+            data.put("avaus", avaus);
+            data.put("viestit", vastausDao.findAllInAvaus(avaus.getId()));
+                        
+            return new ModelAndView(data, "keskusteluavaus");
+            
+        }, new ThymeleafTemplateEngine());
        }
 }

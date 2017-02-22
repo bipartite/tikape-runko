@@ -3,20 +3,27 @@
     th, td{
         padding-left: 20px;
     }
+    
+    ul {
+        list-style: none;
+    }
 </style>
 
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 
     <head>
-        <title >Keskustelualue</title>
+        <title th:text="${keskustelualue.nimi}">Keskustelualue</title>
         <meta charset="utf-8" />
     </head>
 
     <body>
+        <h1 th:text="${keskustelualue.nimi}"></h1>
+        
+        <h2>Avaukset</h2>
+        
         <ul>
-            <li th:each="alue : ${keskustelualue}">
-                <span th:text="${alue.nimi}">nimi</span>
-                    
+            <li th:each="avaus : ${avaukset}">
+                <a th:href="@{~/keskusteluavaus/{id}(id=${avaus.id})}" th:text="${avaus.otsikko}">Avaus</a>
             </li>
         </ul>
     </body>

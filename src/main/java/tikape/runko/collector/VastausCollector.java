@@ -19,6 +19,6 @@ public class VastausCollector implements Collector<Vastaus> {
     
     @Override
     public Vastaus collect(ResultSet rs) throws SQLException {
-            return new Vastaus(rs.getInt("id"), rs.getInt("avaus") , rs.getString("teksti"), rs.getString("nimimerkki"), rs.getTimestamp("julkaisuaika"));
+            return new Vastaus(rs.getInt("id"), rs.getInt("avaus") , rs.getString("teksti"), rs.getString("nimimerkki"), new Timestamp(0));
     }
 }

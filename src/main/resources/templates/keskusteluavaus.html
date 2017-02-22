@@ -1,0 +1,37 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+<style>
+    th, td{
+        padding-left: 20px;
+    }
+    
+    ul {
+        list-style: none;
+    }
+    
+    .message{
+        width: 100%;
+        background-color: #eeeeee;
+        margin-bottom: 5px;
+    }
+</style>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+    <head>
+        <title th:text="${avaus.otsikko}">Otsikko</title>
+        <meta charset="utf-8" />
+    </head>
+
+    <body>
+        <h1 th:text="${avaus.otsikko}"></h1>
+        
+        <ul>
+            <li>
+                <div class="message" th:each="viesti : ${viestit}">
+                    <p><b th:text="${viesti.nimimerkki}">Nimimerkki</b></p>
+                    <p><span th:text="${viesti.teksti}">Teksti</span></p>
+                </div>
+            </li>
+        </ul>
+    </body>
+</html>

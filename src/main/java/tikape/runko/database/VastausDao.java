@@ -92,4 +92,16 @@ public class VastausDao implements Dao<Vastaus, Integer>{
         
         return viimeisin;
     }
+    
+    /**
+     * Returns all the messages from the specified Keskusteluavaus
+     * 
+     * @param key The id of the Keskusteluavaus
+     * @return A list of Vastaus-objects
+     * 
+     * @throws SQLException
+     */
+    public List<Vastaus> findAllInAvaus(int key) throws SQLException{        
+        return database.queryAndCollect("SELECT * FROM Vastaus WHERE avaus=? ORDER BY id DESC", new VastausCollector(), key);
+    }
 }
