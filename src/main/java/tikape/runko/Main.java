@@ -86,5 +86,15 @@ public class Main {
             return new ModelAndView(data, "keskusteluavaus");
             
         }, new ThymeleafTemplateEngine());
+        
+        post("/", (req, res) -> {
+            String nimi = req.queryParams("nimi");
+            
+            alueDao.save(new Keskustelualue(nimi));
+            
+            res.redirect("/");
+            
+            return null;
+        });
        }
 }

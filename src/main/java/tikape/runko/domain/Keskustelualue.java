@@ -28,6 +28,15 @@ public class Keskustelualue {
         viimeisinViesti = null;
     }
     
+    public Keskustelualue(String nimi){
+        System.out.println(nimi);
+        this.id = -1;
+        this.nimi = nimi;
+        viesteja = 0;
+        avaukset = new ArrayList<>();
+        viimeisinViesti = null;
+    }
+    
     public int getId(){
         return id;
     }

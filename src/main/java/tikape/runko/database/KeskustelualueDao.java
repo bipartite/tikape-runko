@@ -40,6 +40,15 @@ public class KeskustelualueDao implements Dao<Keskustelualue, Integer>{
         return alueet.get(0);
     }
 
+     @Override
+    public void save(Keskustelualue alue) throws SQLException {
+        if(alue.getId() < 0){
+            this.database.update("INSERT INTO Keskustelualue(nimi) VALUES(?)", alue.getNimi());
+        } else {
+            this.database.update("INSERT INTO Keskustelualue (id, nimi) VALUES (?, ?)", alue.getId(), alue.getNimi());
+        }
+    }
+
     /**
      * Returns a list of every Keskustelualue-object in the database
      * 
@@ -47,11 +56,6 @@ public class KeskustelualueDao implements Dao<Keskustelualue, Integer>{
      * @return a list of every Keskustelualue-object in the database
      * @throws SQLException 
      */
-     @Override
-    public void save(Keskustelualue alue) throws SQLException {
-        this.database.update("INSERT INTO Keskustelualue (id, nimi) VALUES (?, ?)", alue.getId(), alue.getNimi());
-    }
-
     @Override
     public List<Keskustelualue> findAll() throws SQLException {
         return this.database.queryAndCollect("SELECT * FROM Keskustelualue", new KeskustelualueCollector());
