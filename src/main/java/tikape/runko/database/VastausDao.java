@@ -123,11 +123,10 @@ public class VastausDao implements Dao<Vastaus, Integer>{
         
         ResultSet rs = con.createStatement().executeQuery("SELECT julkaisuaika FROM Vastaus WHERE avaus='"+ key +"' ORDER BY julkaisuaika DESC");
         
-        //TODO fix
-        // **** //
-        //Set viimeisin's value to the value of the julkaisuaika of the first 
+        //Set viimeisin's value to the value of the julkaisuaika of the first
+        
+        //Ei jostain syystä toimi. Antaa tästä kohdasta parseExceptionin ja SQLExcpetionin. Pitää korjata.
         Timestamp viimeisin = rs.getTimestamp("julkaisuaika");
-        // **** //
         
         return viimeisin;
     }
