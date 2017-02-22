@@ -20,7 +20,9 @@
                 <th><b>Viimeisin viesti</b></th>
             </tr>
             <tr th:each="alue: ${alueet}">
-                <td th:text="${alue.nimi}">Otsikko</td>
+                <td>
+                    <a method="POST" th:href="@{~/keskustelualue/{id}(id=${alue.id})}" th:text="${alue.nimi}">Otsikko</a>
+                </td>
                 <td th:text="${alue.viestimaara}">Viestimaara</td>
                 <td th:text="${alue.viimeisinViesti}">Viimeisin viesti</td>
             </tr>

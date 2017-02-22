@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import tikape.runko.collector.KeskustelualueCollector;
 import tikape.runko.domain.Keskustelualue;
 
 /**
@@ -31,17 +32,12 @@ public class KeskustelualueDao implements Dao<Keskustelualue, Integer>{
      */
     @Override
     public Keskustelualue findOne(Integer key) throws SQLException {
-        Connection con = database.getConnection();
-        
-        PreparedStatement stmnt = con.prepareStatement("SELECT * FROM Keskutelualue WHERE id=?", key);
-        
-        //Find all the objects from the database with the given id (returns a list with only one or none objects in it)
-        ResultSet rs = stmnt.executeQuery();
-        
-        int id = rs.getInt("id");
-        String otsikko = rs.getString("nimi");
-        
-        return new Keskustelualue(id, otsikko);
+        List<Keskustelualue> alueet = this.database.queryAndCollect("SELECT * FROM Keskustelualue WHERE id = ?", new KeskustelualueCollector(), key);
+        if (alueet.isEmpty()) {
+            return null;
+        }
+
+        return alueet.get(0);
     }
 
     /**
@@ -51,37 +47,21 @@ public class KeskustelualueDao implements Dao<Keskustelualue, Integer>{
      * @return a list of every Keskustelualue-object in the database
      * @throws SQLException 
      */
-    @Override
-    public List<Keskustelualue> findAll() throws SQLException {
-        Connection con = database.getConnection();
-        
-        //Get everything from the Keskustelualue-table        
-        ResultSet rs = con.createStatement().executeQuery("SELECT * FROM Keskustelualue");
-        
-        List<Keskustelualue> alueet = new ArrayList<Keskustelualue>();
-        
-        while(rs.next()){
-            //Find the needed values from the current row in the table
-            int id = rs.getInt("id");
-            String otsikko = rs.getString("nimi");
-            
-            alueet.add(new Keskustelualue(id, otsikko));
-        }
-        
-        return alueet;
+     @Override
+    public void save(Keskustelualue alue) throws SQLException {
+        this.database.update("INSERT INTO Keskustelualue (id, nimi) VALUES (?, ?)", alue.getId(), alue.getNimi());
     }
 
-    /**
-     * Deletes an object with the given id
-     * from the Keskustelualue-table 
-     * 
-     * @param key the id of the object to delete
-     * @throws SQLException 
-     */
+    @Override
+    public List<Keskustelualue> findAll() throws SQLException {
+        return this.database.queryAndCollect("SELECT * FROM Keskustelualue", new KeskustelualueCollector());
+    }
+
     @Override
     public void delete(Integer key) throws SQLException {
-        database.getConnection().createStatement().execute("DELETE FROM Keskustelualue WHERE id='" + key + "';");
+        this.database.update("DELETE FROM Keskustelualue WHERE id = ?", key);
     }
+    
     
     /**
      * Returns the amount of messages posted under the Keskustelualue

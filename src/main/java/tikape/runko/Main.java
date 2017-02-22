@@ -17,15 +17,13 @@ import tikape.runko.database.KeskusteluavausDao;
 import tikape.runko.database.VastausDao;
 import tikape.runko.domain.Keskustelualue;
 import tikape.runko.domain.Keskusteluavaus;
+import org.thymeleaf.context.IWebContext;
 
 public class Main {
     
-    private void laskeViestit(List<Keskustelualue> alueet, KeskustelualueDao alueDao, KeskusteluavausDao avausDao, VastausDao vastausDao) throws SQLException{
-        
-    }
-
-    public static void main(String[] args) throws Exception {
-        Database database = new Database("jdbc:sqlite:forum.db");
+       public static void main(String[] args) throws Exception {
+        Database database = new Database("org.sqlite.JDBC", "jdbc:sqlite:forum.db");
+        database.setDebugMode(true);
         
         KeskustelualueDao alueDao = new KeskustelualueDao(database);
         KeskusteluavausDao avausDao = new KeskusteluavausDao(database);
@@ -66,5 +64,14 @@ public class Main {
                 }
             }
         }, new ThymeleafTemplateEngine());
-    }
+        
+             
+        get("/keskustelualue/:id", (req, res) ->{
+        HashMap map = new HashMap<>();
+        map.put("keskustelualue", alueDao.findOne(Integer.parseInt(req.params(":id"))));
+        
+        return new ModelAndView(map, "keskustelualue");
+        }, new ThymeleafTemplateEngine());
+    
+       }
 }

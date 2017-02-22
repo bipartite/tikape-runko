@@ -1,0 +1,23 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+<style>
+    th, td{
+        padding-left: 20px;
+    }
+</style>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+    <head>
+        <title >Keskustelualue</title>
+        <meta charset="utf-8" />
+    </head>
+
+    <body>
+        <ul>
+            <li th:each="alue : ${keskustelualue}">
+                <span th:text="${alue.nimi}">nimi</span>
+                    
+            </li>
+        </ul>
+    </body>
+</html>

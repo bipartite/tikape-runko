@@ -1,6 +1,7 @@
 package tikape.runko.domain;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 /**
  *
@@ -11,7 +12,7 @@ public class Keskusteluavaus {
     private int id;
     private int alue;
     private String otsikko;
-    
+    private List<Vastaus> vastaukset;
     private int viestimaara;
     
     private Timestamp viimeisinViesti;

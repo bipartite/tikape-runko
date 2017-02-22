@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import tikape.runko.collector.KeskusteluavausCollector;
 import tikape.runko.domain.Keskusteluavaus;
 
 /**
@@ -21,68 +22,34 @@ public class KeskusteluavausDao implements Dao<Keskusteluavaus, Integer>{
         this.database = database;
     }
 
-    /**
-     * Returns the Keskusteluavaus-object from the database
-     * with the given id
-     * 
-     * @param key the id of the wanted object
-     * @return one Keskusteluavaus-object from the database
-     * @throws SQLException 
-     */
+    
     @Override
     public Keskusteluavaus findOne(Integer key) throws SQLException {
-        Connection con = database.getConnection();
-        
-        PreparedStatement stmnt = con.prepareStatement("SELECT * FROM Keskusteluavaus WHERE id=?", key);
-        
-        //Finds all the objects from the database with the given id(returns a list with one or none objects in it)
-        ResultSet rs = stmnt.executeQuery();
-        
-        //Get the needed information from the object
-        int id = rs.getInt("id");
-        int alue = rs.getInt("alue");
-        String otsikko = rs.getString("otsikko");
-        
-        return new Keskusteluavaus(id, alue, otsikko);
+        List<Keskusteluavaus> avaus = this.database.queryAndCollect("SELECT * FROM Keskusteluavaus WHERE id = ?", new KeskusteluavausCollector(), key);
+        if (avaus.isEmpty()) {
+            return null;
+        }
+
+        return avaus.get(0);
     }
 
-    /**
-     * Returns every Keskusteluavaus-object from the Keskusteluavaus-table in the database
-     * 
-     * @return every Keskusteluavaus-object from the database
-     * @throws SQLException 
-     */
+   
+
+    @Override
+    public void save(Keskusteluavaus avaus) throws SQLException {
+        this.database.update("INSERT INTO Keskusteluavaus (id, alue, otsikko) VALUES (?, ?, ?)", avaus.getId(), avaus.getAlueId(), avaus.getOtsikko());
+    }
+
     @Override
     public List<Keskusteluavaus> findAll() throws SQLException {
-        //Find all the rows in the Keskusteluavaus-table
-        ResultSet rs = database.getConnection()
-                .createStatement()
-                .executeQuery("SELECT * FROM Keskusteluavaus");
-        
-        List<Keskusteluavaus> avaukset = new ArrayList<Keskusteluavaus>();
-        
-        while(rs.next()){
-            //Get the needed information from the object
-            int id = rs.getInt("id");
-            int alue = rs.getInt("alue");
-            String otsikko = rs.getString("otsikko");
-            
-            avaukset.add(new Keskusteluavaus(id, alue, otsikko));
-        }
-        
-        return avaukset;
+        return this.database.queryAndCollect("SELECT * FROM Keskusteluavaus", new KeskusteluavausCollector());
     }
 
-    /**
-     * Delete an Keskusteluavaus-object with the given id from the database
-     * 
-     * @param key the id of the object to be deleted
-     * @throws SQLException 
-     */
     @Override
     public void delete(Integer key) throws SQLException {
-        database.getConnection().createStatement().execute("DELETE FROM Keskusteluavaus WHERE id='" + key + "'");
+        this.database.update("DELETE FROM Keskusteluavaus WHERE id = ?", key);
     }
+    
     
     /**
      * Returns every Keskusteluavaus-object that are in the given Keskustelualue from the database

@@ -1,7 +1,9 @@
 package tikape.runko.domain;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -16,11 +18,13 @@ public class Keskustelualue {
     
     private Date viimeisinViesti;
     
+    private List<Keskusteluavaus> avaukset; 
+    
     public Keskustelualue(int id, String nimi){
         this.id = id;
         this.nimi = nimi;
         viesteja = 0;
-        
+        avaukset = new ArrayList<>();
         viimeisinViesti = null;
     }
     
@@ -59,5 +63,9 @@ public class Keskustelualue {
     
     public void setViimeisinViesti(Date julkaisuaika){
         viimeisinViesti = julkaisuaika;
+    }
+    
+    public void addKeskusteluAvaus(Keskusteluavaus avaus){
+        avaukset.add(avaus);
     }
 }
