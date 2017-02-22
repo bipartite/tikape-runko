@@ -21,10 +21,17 @@
         
         <h2>Avaukset</h2>
         
-        <ul>
-            <li th:each="avaus : ${avaukset}">
-                <a th:href="@{~/keskusteluavaus/{id}(id=${avaus.id})}" th:text="${avaus.otsikko}">Avaus</a>
-            </li>
-        </ul>
+        <table>
+            <tr>
+                <th><b>Avaus</b></th>
+                <th><b>Viesteja</b></th>
+            </tr>
+            <tr th:each="avaus : ${avaukset}">
+                <td>
+                    <a th:href="@{~/keskusteluavaus/{id}(id=${avaus.id})}" th:text="${avaus.otsikko}">Otsikko</a>
+                </td>
+                <td th:text="${avaus.viestimaara}">Viestimaara</td>
+            </tr>
+        </table>
     </body>
 </html>

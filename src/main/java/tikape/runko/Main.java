@@ -70,8 +70,17 @@ public class Main {
             HashMap map = new HashMap<>();
             Keskustelualue alue = alueDao.findOne(Integer.parseInt(req.params(":id")));
             map.put("keskustelualue", alue);
+            
+            List<Keskusteluavaus> avaukset = avausDao.findAllFromAlue(alue.getId());
 
-            map.put("avaukset", avausDao.findAllFromAlue(alue.getId()));
+            // Count the messages in every Keskusteluavaus and save the count
+            for (Keskusteluavaus keskusteluavaus : avaukset) {
+                int viestit = vastausDao.findTheAmountOfMessagesUnder(keskusteluavaus.getId());
+                
+                keskusteluavaus.setViestimaara(viestit);
+            }
+            
+            map.put("avaukset", avaukset);
 
             return new ModelAndView(map, "keskustelualue");
         }, new ThymeleafTemplateEngine());
