@@ -30,6 +30,7 @@
                 <div class="message" th:each="viesti : ${viestit}">
                     <p><b th:text="${viesti.nimimerkki}">Nimimerkki</b></p>
                     <p><span th:text="${viesti.teksti}">Teksti</span></p>
+                    <p><i th:text="${viesti.julkaisuaika}"></i></p>
                 </div>
             </li>
         </ul>

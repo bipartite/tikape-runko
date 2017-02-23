@@ -2,6 +2,7 @@ package tikape.runko;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +40,9 @@ public class Main {
                 // Calculate the amount of messages in each Keskustelualue and save it
                 laskeViestit(alueet);
                 
+                //Find the date of the latest message
+                etsiViimeisinViesti(alueet);
+                
                 map.put("alueet", alueet);
                 
                 return new ModelAndView(map, "index");
@@ -62,6 +66,34 @@ public class Main {
 
                     keskustelualue.setViestimaara(viestejaAlueessa);
                 }
+            } 
+            
+            /**
+             * Finds the latest message in Keskustelualue and saves it
+             * 
+             * @param alueet List of Keskustelualue-objects for which to find the latest messages
+             * @throws SQLException
+             * @throws ParseException 
+             */
+            public void etsiViimeisinViesti(List<Keskustelualue> alueet) throws SQLException, ParseException{
+                for (Keskustelualue keskustelualue : alueet) {
+                    Date viimeisin = null;
+                    for (Keskusteluavaus avaus : avausDao.findAllFromAlue(keskustelualue.getId())) {
+                        Date uusinAvauksessa = vastausDao.findLatestMessageTimestampFromAvaus(avaus.getId());
+                        
+                        if(uusinAvauksessa == null){
+                            continue;
+                        }
+                        if(viimeisin == null){
+                            viimeisin = uusinAvauksessa;
+                            continue;
+                        }
+                        if(uusinAvauksessa.before(viimeisin)){
+                            viimeisin = uusinAvauksessa;
+                        }
+                    }
+                    keskustelualue.setViimeisinViesti(viimeisin);
+                }
             }
         }, new ThymeleafTemplateEngine());
         
@@ -78,6 +110,11 @@ public class Main {
                 int viestit = vastausDao.findTheAmountOfMessagesUnder(keskusteluavaus.getId());
                 
                 keskusteluavaus.setViestimaara(viestit);
+            }
+            
+            // Find the date of the latest messages in each Keskusteluavaus and save the date
+            for (Keskusteluavaus keskusteluavaus : avaukset) {
+                keskusteluavaus.setViimeisinViesti(vastausDao.findLatestMessageTimestampFromAvaus(keskusteluavaus.getId()));
             }
             
             map.put("avaukset", avaukset);

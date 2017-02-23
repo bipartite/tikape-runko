@@ -25,12 +25,14 @@
             <tr>
                 <th><b>Avaus</b></th>
                 <th><b>Viesteja</b></th>
+                <th><b>Viimeisin viesti</b></th>
             </tr>
             <tr th:each="avaus : ${avaukset}">
                 <td>
                     <a th:href="@{~/keskusteluavaus/{id}(id=${avaus.id})}" th:text="${avaus.otsikko}">Otsikko</a>
                 </td>
                 <td th:text="${avaus.viestimaara}">Viestimaara</td>
+                <td th:text="${avaus.viimeisinViesti}">Viimeisin viesti</td>
             </tr>
         </table>
     </body>

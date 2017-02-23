@@ -80,17 +80,21 @@ public class VastausDao implements Dao<Vastaus, Integer>{
      * 
      * @throws SQLException
      */
-    public Timestamp findLatestMessageTimestampFromAvaus(int key) throws SQLException, ParseException{
+    public Date findLatestMessageTimestampFromAvaus(int key) throws SQLException, ParseException{
         Connection con = database.getConnection();
         
         ResultSet rs = con.createStatement().executeQuery("SELECT julkaisuaika FROM Vastaus WHERE avaus='"+ key +"' ORDER BY julkaisuaika DESC");
         
-        //Set viimeisin's value to the value of the julkaisuaika of the first
+        if(!rs.isClosed()){
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         
-        //Ei jostain syystä toimi. Antaa tästä kohdasta parseExceptionin ja SQLExcpetionin. Pitää korjata.
-        Timestamp viimeisin = rs.getTimestamp("julkaisuaika");
+            //Set viimeisin's value to the value of the julkaisuaika of the first
+            Date viimeisin = formatter.parse(rs.getString("julkaisuaika"));
+
+            return viimeisin;
+        }
         
-        return viimeisin;
+        return null;
     }
     
     /**

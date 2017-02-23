@@ -13,9 +13,9 @@ public class Vastaus {
     private int avaus;
     private String teksti;
     private String nimimerkki;
-    private Timestamp julkaisuaika;
+    private Date julkaisuaika;
     
-    public Vastaus(int id, int avaus, String teksti, String nimimerkki, Timestamp julkaisuaika){
+    public Vastaus(int id, int avaus, String teksti, String nimimerkki, Date julkaisuaika){
         this.id = id;
         this.avaus = avaus;
         this.teksti = teksti;
@@ -39,8 +39,13 @@ public class Vastaus {
         return nimimerkki;
     }
     
-    public Timestamp getJulkaisuaika(){
-        return julkaisuaika;
+    public String getJulkaisuaika(){
+        if(julkaisuaika == null){
+            return "";
+        }
+        DateParser parser = new DateParser();
+        
+        return parser.parseDateWithMonthNames(julkaisuaika);
     }
     
     public void setId(int id){

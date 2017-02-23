@@ -1,6 +1,7 @@
 package tikape.runko.domain;
 
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -15,7 +16,7 @@ public class Keskusteluavaus {
     private List<Vastaus> vastaukset;
     private int viestimaara;
     
-    private Timestamp viimeisinViesti;
+    private Date viimeisinViesti;
     
     public Keskusteluavaus(int id, int alue, String otsikko){
         this.id = id;
@@ -47,8 +48,14 @@ public class Keskusteluavaus {
      * 
      * @return The timestamp of the latest message in the Keskusteluavaus
      */
-    public Timestamp getViimeisinViesti(){
-        return viimeisinViesti;
+    public String getViimeisinViesti(){
+        if(viimeisinViesti == null){
+            return "";
+        }
+        
+        DateParser parser = new DateParser();
+        
+        return parser.parseDate(viimeisinViesti);
     }
     
     public void setId(int id){
@@ -67,7 +74,7 @@ public class Keskusteluavaus {
         viestimaara = maara;
     }
  
-    public void setViimeisinViesti(Timestamp julkaisuaika){
+    public void setViimeisinViesti(Date julkaisuaika){
         viimeisinViesti = julkaisuaika;
     }
 }

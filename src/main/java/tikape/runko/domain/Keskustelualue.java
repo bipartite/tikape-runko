@@ -1,9 +1,13 @@
 package tikape.runko.domain;
 
+import com.sun.org.apache.bcel.internal.generic.AALOAD;
 import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import javax.print.attribute.standard.DateTimeAtCompleted;
 
 /**
  *
@@ -54,8 +58,16 @@ public class Keskustelualue {
      * 
      * @return The timestamp of the latest message in the Keskustelualue
      */
-    public Date getViimeisinViesti(){
-        return viimeisinViesti;
+    public String getViimeisinViesti(){
+        if(viimeisinViesti == null){
+            return "";
+        }
+        
+        DateParser parser = new DateParser();
+        
+        String aika = parser.parseDate(viimeisinViesti);
+        
+        return aika;
     }
     
     public void setId(int id){
