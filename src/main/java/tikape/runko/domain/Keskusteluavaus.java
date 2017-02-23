@@ -27,6 +27,15 @@ public class Keskusteluavaus {
         viimeisinViesti = null;
     }
     
+    public Keskusteluavaus(int alue, String otsikko){
+        this.id = -1;
+        this.alue = alue;
+        this.otsikko = otsikko;
+        
+        viestimaara = 0;
+        viimeisinViesti = null;
+    }
+    
     public int getId(){
         return id;
     }

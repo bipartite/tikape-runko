@@ -7,7 +7,27 @@
     ul {
         list-style: none;
     }
+    
+    #addForm {
+        display: none;
+    }
+    
+    .lisaa-avaus{
+        padding: 10px;
+        background-color: #eeeeee;
+        width: 50%;
+    }
 </style>
+
+<script type="text/javascript">
+    function setAddFormVisible(){
+        document.getElementById('addForm').style.display = 'block';
+    }
+    
+    function setAddFormInvisible(){
+        document.getElementById('addForm').style.display = 'none';
+    }
+</script>
 
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 
@@ -35,5 +55,17 @@
                 <td th:text="${avaus.viimeisinViesti}">Viimeisin viesti</td>
             </tr>
         </table>
+        
+        <button onclick="setAddFormVisible()">Lisaa avaus</button>
+        
+        <div id="addForm" class="lisaa-avaus">
+            <form method="POST">
+                <input type="text" placeholder="Avauksen nimi..." name="otsikko" maxlength="50" style="width: 80%;"/><br></br>
+                <textarea placeholder="Viesti..." name="viesti" rows="10" maxlength="1000" style="width: 100%;"/><br></br>
+                <input type="text" placeholder="Nimimerkki..." name="nimimerkki" maxlength="20" style="width: 50%;"/><br></br>
+                <input type="submit" value="Lisaa"/>
+                <input type="button" value="Kumoa" onclick="setAddFormInvisible()"/>
+            </form>
+        </div>
     </body>
 </html>

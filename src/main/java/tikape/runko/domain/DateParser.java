@@ -32,8 +32,7 @@ public class DateParser {
         Calendar formatoija = Calendar.getInstance();
         formatoija.setTime(d);
         
-        // Calendar returns the previous month(january=0, february=1 ...) from the real one so we have to add one to the returned month to get the real result
-        String month = getMonthName(formatoija.get(Calendar.MONTH)+1);
+        String month = getMonthName(formatoija.get(Calendar.MONTH));
         
         // Check the hours, minutes and seconds and add a zero to the front of them if needed
         String tunnit = addZero(formatoija.get(Calendar.HOUR_OF_DAY));

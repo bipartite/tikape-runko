@@ -23,6 +23,14 @@ public class Vastaus {
         this.julkaisuaika = julkaisuaika;
     }
     
+    public Vastaus(int avaus, String teksti, String nimimerkki){
+        this.id = -1;
+        this.avaus = avaus;
+        this.teksti = teksti;
+        this.nimimerkki = nimimerkki;
+        this.julkaisuaika = null;
+    }
+    
     public int getId(){
         return id;
     }

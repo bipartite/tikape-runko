@@ -37,10 +37,15 @@ public class VastausDao implements Dao<Vastaus, Integer>{
     }
 
     @Override
-    //TODO add reference to keskusteluavaus
     public void save(Vastaus vastaus) throws SQLException {
-        this.database.update("INSERT INTO Vastaus (id, avaus, teksti, nimimerkki, julkaisuaika) VALUES (?, ?, ?, ?, ?)", vastaus.getId(), vastaus.getAvausId(), vastaus.getTeksti(),
+        if(vastaus.getId() >= 0 && vastaus.getJulkaisuaika() != null){
+            this.database.update("INSERT INTO Vastaus (id, avaus, teksti, nimimerkki, julkaisuaika) VALUES (?, ?, ?, ?, ?)", vastaus.getId(), vastaus.getAvausId(), vastaus.getTeksti(),
                 vastaus.getNimimerkki(), vastaus.getJulkaisuaika());
+        } else {
+            this.database.update("INSERT INTO Vastaus (avaus, teksti, nimimerkki) VALUES (?, ?, ?)", vastaus.getAvausId(), vastaus.getTeksti(),
+                vastaus.getNimimerkki());
+        }
+        
     }
 
     @Override
@@ -83,7 +88,7 @@ public class VastausDao implements Dao<Vastaus, Integer>{
     public Date findLatestMessageTimestampFromAvaus(int key) throws SQLException, ParseException{
         Connection con = database.getConnection();
         
-        ResultSet rs = con.createStatement().executeQuery("SELECT julkaisuaika FROM Vastaus WHERE avaus='"+ key +"' ORDER BY julkaisuaika DESC");
+        ResultSet rs = con.createStatement().executeQuery("SELECT datetime(julkaisuaika, 'localtime') AS julkaisuaika FROM Vastaus WHERE avaus='"+ key +"' ORDER BY julkaisuaika DESC");
         
         if(!rs.isClosed()){
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -106,6 +111,6 @@ public class VastausDao implements Dao<Vastaus, Integer>{
      * @throws SQLException
      */
     public List<Vastaus> findAllInAvaus(int key) throws SQLException{        
-        return database.queryAndCollect("SELECT * FROM Vastaus WHERE avaus=? ORDER BY id DESC", new VastausCollector(), key);
+        return database.queryAndCollect("SELECT id, avaus, teksti, nimimerkki, datetime(julkaisuaika, 'localtime') AS julkaisuaika FROM Vastaus WHERE avaus=? ORDER BY id DESC", new VastausCollector(), key);
     }
 }

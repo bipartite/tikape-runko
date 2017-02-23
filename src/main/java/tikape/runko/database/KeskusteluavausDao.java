@@ -37,7 +37,37 @@ public class KeskusteluavausDao implements Dao<Keskusteluavaus, Integer>{
 
     @Override
     public void save(Keskusteluavaus avaus) throws SQLException {
-        this.database.update("INSERT INTO Keskusteluavaus (id, alue, otsikko) VALUES (?, ?, ?)", avaus.getId(), avaus.getAlueId(), avaus.getOtsikko());
+        if(avaus.getId() < 0){
+            this.database.update("INSERT INTO Keskusteluavaus (alue, otsikko) VALUES (?, ?, ?)", avaus.getAlueId(), avaus.getOtsikko());
+        } else {
+            this.database.update("INSERT INTO Keskusteluavaus (id, alue, otsikko) VALUES (?, ?, ?)", avaus.getId(), avaus.getAlueId(), avaus.getOtsikko());
+        }
+    }
+    
+    /**
+     * Saves the given object to the database and returns the id that it was saved with
+     * 
+     * @param avaus The Keskusteluavaus-object to be saved
+     * @return The id of the saved object
+     * @throws SQLException 
+     */
+    public int saveAndGetGeneratedId(Keskusteluavaus avaus) throws SQLException{
+        Connection con = database.getConnection();
+        
+        PreparedStatement stmnt = con.prepareStatement("INSERT INTO Keskusteluavaus(alue, otsikko) VALUES(?, ?)");
+        
+        stmnt.setInt(1, avaus.getAlueId());
+        stmnt.setString(2, avaus.getOtsikko());
+        
+        stmnt.execute();
+        
+        ResultSet generatedKeys = stmnt.getGeneratedKeys();
+        
+        if(!generatedKeys.isClosed()){
+            return generatedKeys.getInt(1);
+        }
+        
+        return -1;
     }
 
     @Override
@@ -78,6 +108,4 @@ public class KeskusteluavausDao implements Dao<Keskusteluavaus, Integer>{
         
         return avaukset;
     }
-    
-    
 }

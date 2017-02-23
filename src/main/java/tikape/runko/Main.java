@@ -19,6 +19,7 @@ import tikape.runko.database.VastausDao;
 import tikape.runko.domain.Keskustelualue;
 import tikape.runko.domain.Keskusteluavaus;
 import org.thymeleaf.context.IWebContext;
+import tikape.runko.domain.Vastaus;
 
 public class Main {
     
@@ -141,6 +142,23 @@ public class Main {
             res.redirect("/");
             
             return null;
+        });
+        
+        post("/keskustelualue/:id", (req, res) -> {
+            int alueId = Integer.parseInt(req.params(":id"));
+            String otsikko = req.queryParams("otsikko");
+            String viesti = req.queryParams("viesti");
+            String nimimerkki = req.queryParams("nimimerkki");
+            
+            Keskusteluavaus avaus = new Keskusteluavaus(alueId, otsikko);
+                     
+            int avausId = avausDao.saveAndGetGeneratedId(avaus);
+            
+            vastausDao.save(new Vastaus(avausId, viesti, nimimerkki));
+            
+            res.redirect("/keskusteluavaus/"+avausId);
+            
+            return null; 
         });
        }
 }
