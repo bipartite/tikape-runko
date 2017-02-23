@@ -25,6 +25,7 @@ public class Database {
     }
     
     public <T> List<T> queryAndCollect(String query, Collector<T> col, Object... params) throws SQLException {
+        connection = getConnection();
         if (debug) {
             System.out.println("---");
             System.out.println("Executing: " + query);
@@ -55,6 +56,8 @@ public class Database {
     }
     
     public int update(String updateQuery, Object... params) throws SQLException {
+        connection = getConnection();
+        
         PreparedStatement stmt = connection.prepareStatement(updateQuery);
 
         for (int i = 0; i < params.length; i++) {
@@ -70,7 +73,7 @@ public class Database {
             System.out.println("---");
         }
         stmt.close();
-
+        
         return changes;
     }
 
