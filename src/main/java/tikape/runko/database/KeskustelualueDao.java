@@ -42,6 +42,7 @@ public class KeskustelualueDao implements Dao<Keskustelualue, Integer>{
 
      @Override
     public void save(Keskustelualue alue) throws SQLException {
+        System.out.println("luodun keskustelualueen id >> "+ alue.getId());
         if(alue.getId() < 0){
             this.database.update("INSERT INTO Keskustelualue(nimi) VALUES(?)", alue.getNimi());
         } else {

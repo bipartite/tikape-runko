@@ -4,7 +4,6 @@ import java.sql.*;
 import java.util.*;
 import java.net.*;
 
-
 public class Database {
 
     private String databaseAddress;
@@ -12,15 +11,16 @@ public class Database {
     private Connection connection;
 
     public Database(String databaseAddress) throws Exception {
-     //   Class.forName(driver);
-    //    this.connection = DriverManager.getConnection(databaseAddress);
+        //   Class.forName(driver);
+        //    this.connection = DriverManager.getConnection(databaseAddress);
         this.databaseAddress = databaseAddress;
         init();
     }
+
     /**
      * Luodaan database jos ei ole vielä olemassa. Postgrelauseet herokua varten
      */
-    public void init(){
+    private void init() {
         List<String> lauseet = null;
         if (this.databaseAddress.contains("postgres")) {
             lauseet = postgreLauseet();
@@ -41,7 +41,7 @@ public class Database {
             // jos tietokantataulu on jo olemassa, ei komentoja suoriteta
             System.out.println("Error >> " + t.getMessage());
         }
-        
+
     }
 
     public Connection getConnection() throws SQLException {
@@ -62,17 +62,16 @@ public class Database {
 
         return DriverManager.getConnection(databaseAddress);
     }
-    
+
     private List<String> postgreLauseet() {
         ArrayList<String> lista = new ArrayList<>();
 
         // tietokantataulujen luomiseen tarvittavat komennot suoritusjärjestyksessä
-      
         // heroku käyttää SERIAL-avainsanaa uuden tunnuksen automaattiseen luomiseen
         lista.add("CREATE TABLE Keskusteluavaus (id SERIAL PRIMARY KEY NOT NULL, alue INTEGER, otsikko VARCHAR(50) NOT NULL, FOREIGN KEY(alue) REFERENCES Keskustelualue(id));");
         lista.add("CREATE TABLE Keskustelualue(id SERIAL PRIMARY KEY NOT NULL, nimi VARCHAR(20) NOT NULL);");
         lista.add("CREATE TABLE Vastaus(id SERIAL PRIMARY KEY NOT NULL, avaus INTEGER, teksti VARCHAR(1000) NOT NULL, nimimerkki VARCHAR(20) NOT NULL, julkaisuaika TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(avaus) REFERENCES Keskusteluavaus(id));");
-        
+
         lista.add("INSERT INTO Keskustelualue (nimi) VALUES ('Musiikki')");
         lista.add("INSERT INTO Keskustelualue (nimi) VALUES ('Tietokoneet')");
         return lista;
@@ -88,71 +87,84 @@ public class Database {
 
         lista.add("INSERT INTO Keskustelualue (nimi) VALUES ('Musiikki')");
         lista.add("INSERT INTO Keskustelualue (nimi) VALUES ('Tietokoneet')");
-        
+
         lista.add("INSERT INTO Keskusteluavaus (alue, otsikko) VALUES (1, 'pop on jees!');");
-        
+
         return lista;
     }
-    
 
     public void setDebugMode(boolean b) {
         debug = b;
     }
-    
+
     public <T> List<T> queryAndCollect(String query, Collector<T> col, Object... params) throws SQLException {
-        connection = getConnection();
-        if (debug) {
-            System.out.println("---");
-            System.out.println("Executing: " + query);
-            System.out.println("---");
-        }
-        List<T> rows = new ArrayList<>();
-        PreparedStatement stmt = connection.prepareStatement(query);
-        for (int i = 0; i < params.length; i++) {
-            stmt.setObject(i + 1, params[i]);
-        }
-        
-        ResultSet rs = stmt.executeQuery();
+        // "try with resources" sulkee resurssin automaattisesti lopuksi
+        try (Connection conn = getConnection()) {
 
-        while (rs.next()) {
-            if (debug) {
-                System.out.println("---");
-                System.out.println(query);
-                debug(rs);
-                System.out.println("---");
+            List<T> rows;
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                if (debug) {
+                    System.out.println("---");
+                    System.out.println("Executing: " + query);
+                    System.out.println("---");
+                }
+                rows = new ArrayList<>();
+                for (int i = 0; i < params.length; i++) {
+                    stmt.setObject(i + 1, params[i]);
+                }
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        if (debug) {
+                            System.out.println("---");
+                            System.out.println(query);
+                            debug(rs);
+                            System.out.println("---");
+                        }
+                        rows.add(col.collect(rs));
+
+                    }
+                }
             }
-            rows.add(col.collect(rs));
-            
+
+            return rows;
+
+        } catch (Throwable t) {
+
+            System.out.println("Error >> " + t.getMessage());
         }
-        rs.close();
-        stmt.close();
-        
-        return rows;
+
+        return null;
+
     }
-    
+
     public int update(String updateQuery, Object... params) throws SQLException {
-        connection = getConnection();
-        
-        PreparedStatement stmt = connection.prepareStatement(updateQuery);
+        int changes = 0;
+        // "try with resources" sulkee resurssin automaattisesti lopuksi
+        try (Connection conn = getConnection()) {
 
-        for (int i = 0; i < params.length; i++) {
-            stmt.setObject(i + 1, params[i]);
+            try (PreparedStatement stmt = conn.prepareStatement(updateQuery)) {
+                for (int i = 0; i < params.length; i++) {
+                    stmt.setObject(i + 1, params[i]);
+                }
+
+                changes = stmt.executeUpdate();
+
+                if (debug) {
+                    System.out.println("---");
+                    System.out.println(updateQuery);
+                    System.out.println("Changed rows: " + changes);
+                    System.out.println("---");
+                }
+            }
+
+            return changes;
+        } catch (Throwable t) {
+            System.out.println("Error while updating db >> " + t.getMessage());
         }
-
-        int changes = stmt.executeUpdate();
-
-        if (debug) {
-            System.out.println("---");
-            System.out.println(updateQuery);
-            System.out.println("Changed rows: " + changes);
-            System.out.println("---");
-        }
-        stmt.close();
-        
         return changes;
     }
 
-        private void debug(ResultSet rs) throws SQLException {
+    private void debug(ResultSet rs) throws SQLException {
         int columns = rs.getMetaData().getColumnCount();
         for (int i = 0; i < columns; i++) {
             System.out.print(
