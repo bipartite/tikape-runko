@@ -1,6 +1,5 @@
 package tikape.runko.domain;
 
-import com.sun.org.apache.bcel.internal.generic.AALOAD;
 import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;

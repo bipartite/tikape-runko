@@ -1,8 +1,9 @@
 package tikape.runko.database;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.net.*;
+
 
 public class Database {
 
@@ -10,15 +11,89 @@ public class Database {
     private boolean debug;
     private Connection connection;
 
-    public Database(String driver, String databaseAddress) throws Exception {
-        Class.forName(driver);
-        this.connection = DriverManager.getConnection(databaseAddress);
+    public Database(String databaseAddress) throws Exception {
+     //   Class.forName(driver);
+    //    this.connection = DriverManager.getConnection(databaseAddress);
         this.databaseAddress = databaseAddress;
+        init();
+    }
+    /**
+     * Luodaan database jos ei ole vielä olemassa. Postgrelauseet herokua varten
+     */
+    public void init(){
+        List<String> lauseet = null;
+        if (this.databaseAddress.contains("postgres")) {
+            lauseet = postgreLauseet();
+        } else {
+            lauseet = sqliteLauseet();
+        }
+        // "try with resources" sulkee resurssin automaattisesti lopuksi
+        try (Connection conn = getConnection()) {
+            Statement st = conn.createStatement();
+
+            // suoritetaan komennot
+            for (String lause : lauseet) {
+                System.out.println("Running command >> " + lause);
+                st.executeUpdate(lause);
+            }
+
+        } catch (Throwable t) {
+            // jos tietokantataulu on jo olemassa, ei komentoja suoriteta
+            System.out.println("Error >> " + t.getMessage());
+        }
+        
     }
 
     public Connection getConnection() throws SQLException {
+        if (this.databaseAddress.contains("postgres")) {
+            try {
+                URI dbUri = new URI(databaseAddress);
+
+                String username = dbUri.getUserInfo().split(":")[0];
+                String password = dbUri.getUserInfo().split(":")[1];
+                String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath();
+
+                return DriverManager.getConnection(dbUrl, username, password);
+            } catch (Throwable t) {
+                System.out.println("Error: " + t.getMessage());
+                t.printStackTrace();
+            }
+        }
+
         return DriverManager.getConnection(databaseAddress);
     }
+    
+    private List<String> postgreLauseet() {
+        ArrayList<String> lista = new ArrayList<>();
+
+        // tietokantataulujen luomiseen tarvittavat komennot suoritusjärjestyksessä
+      
+        // heroku käyttää SERIAL-avainsanaa uuden tunnuksen automaattiseen luomiseen
+        lista.add("CREATE TABLE Keskusteluavaus (id SERIAL PRIMARY KEY NOT NULL, alue INTEGER, otsikko VARCHAR(50) NOT NULL, FOREIGN KEY(alue) REFERENCES Keskustelualue(id));");
+        lista.add("CREATE TABLE Keskustelualue(id SERIAL PRIMARY KEY NOT NULL, nimi VARCHAR(20) NOT NULL);");
+        lista.add("CREATE TABLE Vastaus(id SERIAL PRIMARY KEY NOT NULL, avaus INTEGER, teksti VARCHAR(1000) NOT NULL, nimimerkki VARCHAR(20) NOT NULL, julkaisuaika TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(avaus) REFERENCES Keskusteluavaus(id));");
+        
+        lista.add("INSERT INTO Keskustelualue (nimi) VALUES ('Musiikki')");
+        lista.add("INSERT INTO Keskustelualue (nimi) VALUES ('Tietokoneet')");
+        return lista;
+    }
+
+    private List<String> sqliteLauseet() {
+        ArrayList<String> lista = new ArrayList<>();
+
+        // tietokantataulujen luomiseen tarvittavat komennot suoritusjärjestyksessä
+        lista.add("CREATE TABLE Keskusteluavaus(id INTEGER PRIMARY KEY NOT NULL, alue INTEGER, otsikko VARCHAR(50) NOT NULL, FOREIGN KEY(alue) REFERENCES Keskustelualue(id));");
+        lista.add("CREATE TABLE Keskustelualue(id INTEGER PRIMARY KEY NOT NULL, nimi VARCHAR(20) NOT NULL);");
+        lista.add("CREATE TABLE Vastaus(id INTEGER PRIMARY KEY NOT NULL, avaus INTEGER, teksti VARCHAR(1000) NOT NULL, nimimerkki VARCHAR(20) NOT NULL, julkaisuaika TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(avaus) REFERENCES Keskusteluavaus(id));");
+
+        lista.add("INSERT INTO Keskustelualue (nimi) VALUES ('Musiikki')");
+        lista.add("INSERT INTO Keskustelualue (nimi) VALUES ('Tietokoneet')");
+        
+        lista.add("INSERT INTO Keskusteluavaus (alue, otsikko) VALUES (1, 'pop on jees!');");
+        
+        return lista;
+    }
+    
 
     public void setDebugMode(boolean b) {
         debug = b;
