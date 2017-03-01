@@ -36,7 +36,7 @@ public class Database {
                 System.out.println("Running command >> " + lause);
                 st.executeUpdate(lause);
             }
-
+            st.close();
         } catch (Throwable t) {
             // jos tietokantataulu on jo olemassa, ei komentoja suoriteta
             System.out.println("Error >> " + t.getMessage());
@@ -135,6 +135,8 @@ public class Database {
                         rows.add(col.collect(rs));
 
                     }
+                    stmt.close();
+                    rs.close();
                 }
             }
 
@@ -167,6 +169,8 @@ public class Database {
 
                 changes = stmt.executeUpdate();
 
+                stmt.close();
+                
                 if (debug) {
                     System.out.println("---");
                     System.out.println(updateQuery);

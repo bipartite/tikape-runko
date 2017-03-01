@@ -69,7 +69,7 @@ public class Main {
                     int alueId = keskustelualue.getId();
 
                     List<Keskusteluavaus> avaukset = avausDao.findAllFromAlue(alueId);
-
+                    
                     for (Keskusteluavaus keskusteluavaus : avaukset) {
                         int avausId = keskusteluavaus.getId();
 

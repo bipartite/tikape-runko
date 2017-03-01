@@ -63,6 +63,8 @@ public class KeskusteluavausDao implements Dao<Keskusteluavaus, Integer>{
         
         ResultSet generatedKeys = stmnt.getGeneratedKeys();
         
+        stmnt.close();
+        
         if(!generatedKeys.isClosed()){
             return generatedKeys.getInt(1);
         }
@@ -94,6 +96,8 @@ public class KeskusteluavausDao implements Dao<Keskusteluavaus, Integer>{
         
         //Find all Keskusteluavaus-objects where the alue is the same as the given key
         ResultSet rs = ps.executeQuery();
+        
+        ps.close();
         
         List<Keskusteluavaus> avaukset = new ArrayList<>();
         
