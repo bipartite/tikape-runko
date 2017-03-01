@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import tikape.runko.collector.IntegerCollector;
 import tikape.runko.collector.VastausCollector;
 import tikape.runko.domain.Keskustelualue;
 import tikape.runko.domain.Vastaus;
@@ -65,16 +66,17 @@ public class VastausDao implements Dao<Vastaus, Integer>{
      * @return  The number of messages in the Keskusteluavaus
      */
     public int findTheAmountOfMessagesUnder(int key) throws SQLException{
-        Connection con = database.getConnection();
+    //    Connection con = database.getConnection();
         
-        PreparedStatement ps = con.prepareStatement("SELECT count(id) AS viesteja FROM Vastaus WHERE avaus='" + key + "'");
-        
+     //   PreparedStatement ps = con.prepareStatement("SELECT count(id) AS viesteja FROM Vastaus WHERE avaus='" + key + "'");
+        List<Integer> vastaukset = this.database.queryAndCollect("SELECT count(id) AS viesteja FROM Vastaus WHERE avaus=?", new IntegerCollector(), key);
+     //   System.out.println(vastaukset.get(0));
         //Find the number of messages under the specified Keskusteluavaus
-        ResultSet rs = ps.executeQuery();
+   //     ResultSet rs = ps.executeQuery();
         
-        int viesteja = rs.getInt("viesteja");
+    //    int viesteja = rs.getInt("viesteja");
         
-        return viesteja;
+        return vastaukset.get(0);
     }
     
     /**

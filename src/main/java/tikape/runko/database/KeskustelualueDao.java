@@ -44,7 +44,7 @@ public class KeskustelualueDao implements Dao<Keskustelualue, Integer>{
     public void save(Keskustelualue alue) throws SQLException {
         System.out.println("luodun keskustelualueen id >> "+ alue.getId());
         if(alue.getId() < 0){
-            this.database.update("INSERT INTO Keskustelualue(nimi) VALUES(?)", alue.getNimi());
+            this.database.update("INSERT INTO Keskustelualue (nimi) VALUES(?)", alue.getNimi());
         } else {
             this.database.update("INSERT INTO Keskustelualue (id, nimi) VALUES (?, ?)", alue.getId(), alue.getNimi());
         }
@@ -79,7 +79,6 @@ public class KeskustelualueDao implements Dao<Keskustelualue, Integer>{
      */
     public int getMessageAmount(Integer key) throws SQLException{
         // TODO: implement
-        Connection con = database.getConnection();
         
         return 0;
     }

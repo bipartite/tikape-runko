@@ -72,8 +72,10 @@ public class Database {
         lista.add("CREATE TABLE Keskustelualue(id SERIAL PRIMARY KEY NOT NULL, nimi VARCHAR(20) NOT NULL);");
         lista.add("CREATE TABLE Vastaus(id SERIAL PRIMARY KEY NOT NULL, avaus INTEGER, teksti VARCHAR(1000) NOT NULL, nimimerkki VARCHAR(20) NOT NULL, julkaisuaika TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(avaus) REFERENCES Keskusteluavaus(id));");
 
-        lista.add("INSERT INTO Keskustelualue (nimi) VALUES ('Musiikki')");
-        lista.add("INSERT INTO Keskustelualue (nimi) VALUES ('Tietokoneet')");
+        lista.add("INSERT INTO Keskustelualue (nimi) VALUES ('Musiikki');");
+        lista.add("INSERT INTO Keskustelualue (nimi) VALUES ('Tietokoneet');");
+        lista.add("INSERT INTO Keskusteluavaus (alue, otsikko) VALUES (1, 'pop on jees!');");
+        lista.add("INSERT INTO Vastaus (avaus, teksti, nimimerkki, julkaisuaika) VALUES (1, 'nii on klasariki', 'kalle', '01.07.1970 01:00:00');");
         return lista;
     }
 
@@ -81,14 +83,16 @@ public class Database {
         ArrayList<String> lista = new ArrayList<>();
 
         // tietokantataulujen luomiseen tarvittavat komennot suoritusjärjestyksessä
-        lista.add("CREATE TABLE Keskusteluavaus(id INTEGER PRIMARY KEY NOT NULL, alue INTEGER, otsikko VARCHAR(50) NOT NULL, FOREIGN KEY(alue) REFERENCES Keskustelualue(id));");
         lista.add("CREATE TABLE Keskustelualue(id INTEGER PRIMARY KEY NOT NULL, nimi VARCHAR(20) NOT NULL);");
+
+        lista.add("CREATE TABLE Keskusteluavaus(id INTEGER PRIMARY KEY NOT NULL, alue INTEGER, otsikko VARCHAR(50) NOT NULL, FOREIGN KEY(alue) REFERENCES Keskustelualue(id));");
         lista.add("CREATE TABLE Vastaus(id INTEGER PRIMARY KEY NOT NULL, avaus INTEGER, teksti VARCHAR(1000) NOT NULL, nimimerkki VARCHAR(20) NOT NULL, julkaisuaika TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(avaus) REFERENCES Keskusteluavaus(id));");
 
-        lista.add("INSERT INTO Keskustelualue (nimi) VALUES ('Musiikki')");
-        lista.add("INSERT INTO Keskustelualue (nimi) VALUES ('Tietokoneet')");
+        lista.add("INSERT INTO Keskustelualue (nimi) VALUES ('Musiikki');");
+        lista.add("INSERT INTO Keskustelualue (nimi) VALUES ('Tietokoneet');");
 
-        lista.add("INSERT INTO Keskusteluavaus (alue, otsikko) VALUES (1, 'pop on jees!');");
+       lista.add("INSERT INTO Keskusteluavaus (alue, otsikko) VALUES (1, 'pop on jees!');");
+       lista.add("INSERT INTO Vastaus (avaus, teksti, nimimerkki) VALUES (1, 'nii on klasariki', 'kalle');");
 
         return lista;
     }
@@ -96,7 +100,15 @@ public class Database {
     public void setDebugMode(boolean b) {
         debug = b;
     }
-
+    /**
+     * 
+     * @param <T>
+     * @param query
+     * @param col
+     * @param params
+     * @return List<T> rows or null 
+     * @throws SQLException 
+     */
     public <T> List<T> queryAndCollect(String query, Collector<T> col, Object... params) throws SQLException {
         // "try with resources" sulkee resurssin automaattisesti lopuksi
         try (Connection conn = getConnection()) {
@@ -136,7 +148,13 @@ public class Database {
         return null;
 
     }
-
+    /**
+     * 
+     * @param updateQuery
+     * @param params
+     * @return 0 if none changed or # changed rows
+     * @throws SQLException 
+     */
     public int update(String updateQuery, Object... params) throws SQLException {
         int changes = 0;
         // "try with resources" sulkee resurssin automaattisesti lopuksi
