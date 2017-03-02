@@ -72,11 +72,9 @@ public class VastausDao implements Dao<Vastaus, Integer>{
         List<Integer> vastaukset = this.database.queryAndCollect("SELECT count(id) AS viesteja FROM Vastaus WHERE avaus=?", new IntegerCollector(), key);
         
         //Find the number of messages under the specified Keskusteluavaus
-        ResultSet rs = ps.executeQuery();
-        
+        int viesteja = ps.executeQuery().getInt("viesteja");
+     
         ps.close();
-        
-        int viesteja = rs.getInt("viesteja");
         
         return viesteja;
     }
@@ -102,6 +100,7 @@ public class VastausDao implements Dao<Vastaus, Integer>{
 
             return viimeisin;
         }
+        rs.close();
         
         return null;
     }

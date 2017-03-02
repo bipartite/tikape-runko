@@ -1,5 +1,6 @@
 package tikape.runko.database;
 
+import tikape.runko.collector.Collector;
 import java.sql.*;
 import java.util.*;
 import java.net.*;
@@ -12,15 +13,17 @@ public class Database {
 
     public Database(String databaseAddress) throws Exception {
         //   Class.forName(driver);
-        //    this.connection = DriverManager.getConnection(databaseAddress);
+        this.connection = DriverManager.getConnection(databaseAddress);
         this.databaseAddress = databaseAddress;
         init();
     }
 
     /**
-     * Luodaan database jos ei ole vielä olemassa. Postgrelauseet herokua varten
+     * Luodaan database jos ei ole vielÃ¤ olemassa. Postgrelauseet herokua varten
      */
-    private void init() {
+    private void init() throws SQLException {
+        connection = getConnection();
+        
         List<String> lauseet = null;
         if (this.databaseAddress.contains("postgres")) {
             lauseet = postgreLauseet();
@@ -28,8 +31,7 @@ public class Database {
             lauseet = sqliteLauseet();
         }
         // "try with resources" sulkee resurssin automaattisesti lopuksi
-        try (Connection conn = getConnection()) {
-            Statement st = conn.createStatement();
+            Statement st = connection.createStatement();
 
             // suoritetaan komennot
             for (String lause : lauseet) {
@@ -37,10 +39,7 @@ public class Database {
                 st.executeUpdate(lause);
             }
             st.close();
-        } catch (Throwable t) {
-            // jos tietokantataulu on jo olemassa, ei komentoja suoriteta
-            System.out.println("Error >> " + t.getMessage());
-        }
+        
 
     }
 
@@ -60,14 +59,14 @@ public class Database {
             }
         }
 
-        return DriverManager.getConnection(databaseAddress);
+        return connection;
     }
 
     private List<String> postgreLauseet() {
         ArrayList<String> lista = new ArrayList<>();
 
-        // tietokantataulujen luomiseen tarvittavat komennot suoritusjärjestyksessä
-        // heroku käyttää SERIAL-avainsanaa uuden tunnuksen automaattiseen luomiseen
+        // tietokantataulujen luomiseen tarvittavat komennot suoritusjÃ¤rjestyksessÃ¤
+        // heroku kÃ¤yttÃ¤Ã¤ SERIAL-avainsanaa uuden tunnuksen automaattiseen luomiseen
         lista.add("CREATE TABLE Keskusteluavaus (id SERIAL PRIMARY KEY NOT NULL, alue INTEGER, otsikko VARCHAR(50) NOT NULL, FOREIGN KEY(alue) REFERENCES Keskustelualue(id));");
         lista.add("CREATE TABLE Keskustelualue(id SERIAL PRIMARY KEY NOT NULL, nimi VARCHAR(20) NOT NULL);");
         lista.add("CREATE TABLE Vastaus(id SERIAL PRIMARY KEY NOT NULL, avaus INTEGER, teksti VARCHAR(1000) NOT NULL, nimimerkki VARCHAR(20) NOT NULL, julkaisuaika TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(avaus) REFERENCES Keskusteluavaus(id));");
@@ -82,8 +81,8 @@ public class Database {
     private List<String> sqliteLauseet() {
         ArrayList<String> lista = new ArrayList<>();
 
-        // tietokantataulujen luomiseen tarvittavat komennot suoritusjärjestyksessä
-        lista.add("CREATE TABLE Keskustelualue(id INTEGER PRIMARY KEY NOT NULL, nimi VARCHAR(20) NOT NULL);");
+        // tietokantataulujen luomiseen tarvittavat komennot suoritusjÃ¤rjestyksessÃ¤
+        /*lista.add("CREATE TABLE Keskustelualue(id INTEGER PRIMARY KEY NOT NULL, nimi VARCHAR(20) NOT NULL);");
 
         lista.add("CREATE TABLE Keskusteluavaus(id INTEGER PRIMARY KEY NOT NULL, alue INTEGER, otsikko VARCHAR(50) NOT NULL, FOREIGN KEY(alue) REFERENCES Keskustelualue(id));");
         lista.add("CREATE TABLE Vastaus(id INTEGER PRIMARY KEY NOT NULL, avaus INTEGER, teksti VARCHAR(1000) NOT NULL, nimimerkki VARCHAR(20) NOT NULL, julkaisuaika TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(avaus) REFERENCES Keskusteluavaus(id));");
@@ -92,7 +91,7 @@ public class Database {
         lista.add("INSERT INTO Keskustelualue (nimi) VALUES ('Tietokoneet');");
 
        lista.add("INSERT INTO Keskusteluavaus (alue, otsikko) VALUES (1, 'pop on jees!');");
-       lista.add("INSERT INTO Vastaus (avaus, teksti, nimimerkki) VALUES (1, 'nii on klasariki', 'kalle');");
+       lista.add("INSERT INTO Vastaus (avaus, teksti, nimimerkki) VALUES (1, 'nii on klasariki', 'kalle');");*/
 
         return lista;
     }
@@ -110,11 +109,9 @@ public class Database {
      * @throws SQLException 
      */
     public <T> List<T> queryAndCollect(String query, Collector<T> col, Object... params) throws SQLException {
-        // "try with resources" sulkee resurssin automaattisesti lopuksi
-        try (Connection conn = getConnection()) {
-
+            connection = getConnection();
             List<T> rows;
-            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
                 if (debug) {
                     System.out.println("---");
                     System.out.println("Executing: " + query);
@@ -135,20 +132,13 @@ public class Database {
                         rows.add(col.collect(rs));
 
                     }
-                    stmt.close();
                     rs.close();
+                    stmt.close();
                 }
+                stmt.close();
             }
-
+            
             return rows;
-
-        } catch (Throwable t) {
-
-            System.out.println("Error >> " + t.getMessage());
-        }
-
-        return null;
-
     }
     /**
      * 
@@ -159,10 +149,7 @@ public class Database {
      */
     public int update(String updateQuery, Object... params) throws SQLException {
         int changes = 0;
-        // "try with resources" sulkee resurssin automaattisesti lopuksi
-        try (Connection conn = getConnection()) {
-
-            try (PreparedStatement stmt = conn.prepareStatement(updateQuery)) {
+            try (PreparedStatement stmt = connection.prepareStatement(updateQuery)) {
                 for (int i = 0; i < params.length; i++) {
                     stmt.setObject(i + 1, params[i]);
                 }
@@ -180,10 +167,6 @@ public class Database {
             }
 
             return changes;
-        } catch (Throwable t) {
-            System.out.println("Error while updating db >> " + t.getMessage());
-        }
-        return changes;
     }
 
     private void debug(ResultSet rs) throws SQLException {

@@ -7,7 +7,6 @@ package tikape.runko.collector;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import tikape.runko.database.Collector;
 
 /**
  *

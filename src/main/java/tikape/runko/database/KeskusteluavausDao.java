@@ -38,7 +38,7 @@ public class KeskusteluavausDao implements Dao<Keskusteluavaus, Integer>{
     @Override
     public void save(Keskusteluavaus avaus) throws SQLException {
         if(avaus.getId() < 0){
-            this.database.update("INSERT INTO Keskusteluavaus (alue, otsikko) VALUES (?, ?, ?)", avaus.getAlueId(), avaus.getOtsikko());
+            this.database.update("INSERT INTO Keskusteluavaus (alue, otsikko) VALUES (?, ?)", avaus.getAlueId(), avaus.getOtsikko());
         } else {
             this.database.update("INSERT INTO Keskusteluavaus (id, alue, otsikko) VALUES (?, ?, ?)", avaus.getId(), avaus.getAlueId(), avaus.getOtsikko());
         }
@@ -63,13 +63,12 @@ public class KeskusteluavausDao implements Dao<Keskusteluavaus, Integer>{
         
         ResultSet generatedKeys = stmnt.getGeneratedKeys();
         
+        int key = generatedKeys.getInt(1);
+        
+        generatedKeys.close();
         stmnt.close();
         
-        if(!generatedKeys.isClosed()){
-            return generatedKeys.getInt(1);
-        }
-        
-        return -1;
+        return key;
     }
 
     @Override
@@ -89,26 +88,8 @@ public class KeskusteluavausDao implements Dao<Keskusteluavaus, Integer>{
      * @param key the id of the Keskustelualue where the Keskusteluavaus-objects are wanted from
      * @return A list of Keskusteluavaus-objects that are under the specified Keskustelualue
      */
-    public List<Keskusteluavaus> findAllFromAlue(int key) throws SQLException{
-        Connection con = database.getConnection();
-        
-        PreparedStatement ps = con.prepareStatement("SELECT * FROM Keskusteluavaus WHERE alue = '" + key +"'");
-        
-        //Find all Keskusteluavaus-objects where the alue is the same as the given key
-        ResultSet rs = ps.executeQuery();
-        
-        ps.close();
-        
-        List<Keskusteluavaus> avaukset = new ArrayList<>();
-        
-        while(rs.next()){
-            //Get the needed information from the object
-            int id = rs.getInt("id");
-            int alue = rs.getInt("alue");
-            String otsikko = rs.getString("otsikko");
-            
-            avaukset.add(new Keskusteluavaus(id, alue, otsikko));
-        }
+    public List<Keskusteluavaus> findAllFromAlue(int key) throws SQLException{        
+        List<Keskusteluavaus> avaukset = database.queryAndCollect("SELECT * FROM Keskusteluavaus WHERE alue = ?", new KeskusteluavausCollector(), key);
         
         return avaukset;
     }

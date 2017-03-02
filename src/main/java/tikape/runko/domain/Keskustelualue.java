@@ -32,7 +32,7 @@ public class Keskustelualue {
     }
     
     public Keskustelualue(String nimi){
-        System.out.println(nimi);
+        //System.out.println(nimi);
         this.id = -1;
         this.nimi = nimi;
         viesteja = 0;

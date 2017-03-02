@@ -1,4 +1,4 @@
-package tikape.runko.database;
+package tikape.runko.collector;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
