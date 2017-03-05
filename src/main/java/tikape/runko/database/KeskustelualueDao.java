@@ -61,6 +61,17 @@ public class KeskustelualueDao implements Dao<Keskustelualue, Integer>{
     public List<Keskustelualue> findAll() throws SQLException {
         return this.database.queryAndCollect("SELECT * FROM Keskustelualue", new KeskustelualueCollector());
     }
+    
+    /**
+     * Returns a list of every Keskustelualue-object in the database in alphabetic order
+     * 
+     * 
+     * @return a list of every Keskustelualue-object in the database in alphabetic order
+     * @throws SQLException 
+     */
+    public List<Keskustelualue> findAllOrderByName() throws SQLException {
+        return this.database.queryAndCollect("SELECT * FROM Keskustelualue ORDER BY nimi", new KeskustelualueCollector());
+    }
 
     @Override
     public void delete(Integer key) throws SQLException {

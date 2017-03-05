@@ -13,15 +13,78 @@
         background-color: #eeeeee;
         width: fit-content;
     }
+    
+    #findAlue{
+        display: block;
+    }
+    
+    #saveAlue{
+        display: none;
+    }
+    
+    #deleteAlue{
+        display: none;
+    }
+    
+    #alueResults {
+        display: block;
+    }
 </style>
 
 <script type="text/javascript">
+    var currentDao = "keskustelualue";
+    var selectedAction = "findOne";
+    
+    var reults = false;
+    
     function setAddFormVisible(){
         document.getElementById('addForm').style.display = 'block';
     }
     
     function setAddFormInvisible(){
         document.getElementById('addForm').style.display = 'none';
+    }
+    
+    function changeDao(select){
+        if(select){
+            currentDao = select.options[select.selectedIndex].value;
+        }
+    }
+    
+    function changeAction(select){
+        selectedAction = select.options[select.selectedIndex].value;
+        switch(currentDao){
+            case "keskustelualue":
+                if(selectedAction === "findOne"){
+                    document.getElementById("findAlue")
+                                .style.display = 'block';
+                } else {
+                    document.getElementById("findAlue")
+                                .style.display = 'none';
+                }
+                if(selectedAction === "save"){
+                    document.getElementById("saveAlue")
+                                .style.display = 'block';
+                } else {
+                    document.getElementById("saveAlue")
+                                .style.display = 'none';
+                }
+                if(selectedAction === "delete"){
+                    document.getElementById("deleteAlue")
+                                .style.display = 'block';
+                } else {
+                    document.getElementById("deleteAlue")
+                                .style.display = 'none';
+                }
+        }
+    }
+    
+    function execute(){
+        if(currentDao === "keskustelualue"){
+            document.getElementById("alueResults").style.display = 'block';
+        }
+        
+        results = false;
     }
 </script>
 
@@ -41,7 +104,7 @@
             </tr>
             <tr th:each="alue: ${alueet}">
                 <td>
-                    <a th:href="@{~/keskustelualue/{id}(id=${alue.id})}" th:text="${alue.nimi}">Otsikko</a>
+                    <a th:href="@{~/keskustelualue/{id}?sivu=0(id=${alue.id})}" th:text="${alue.nimi}">Otsikko</a>
                 </td>
                 <td th:text="${alue.viestimaara}">Viestimaara</td>
                 <td th:text="${alue.viimeisinViesti}">Viimeisin viesti</td>
@@ -56,4 +119,55 @@
             <input type="button" value="Kumoa" onclick="setAddFormInvisible()" style="margin-left: 10px;"/>
         </form>
     </body>
+    
+    <!--<footer style="margin-top: 50px; width: 50%;">
+        <h2>Testaa daoja</h2>
+        <form id="databaseTest" method="POST">
+            Valitse dao: <select onchange="changeDao(this)">
+                <option id="testAlue" value="keskustelualue">KeskustelualueDao</option>
+                <option id="testAvaus" value="keskusteluavaus">KeskusteluavausDao</option>
+                <option id="testVastaus" value="vastaus">VastausDao</option>
+            </select>
+            <br/>
+            Valitse funktio: <select onchange="changeAction(this)">
+                <option id="findOne" value="findOne">Find one</option>
+                <option id="findAll" value="findAll">Find all</option>
+                <option id="save" value="save">Save</option>
+                <option id="delete" value="delete">Delete</option>
+            </select>
+            <br/><br/>
+            <div id="findAlue">
+                <p>Etsittavan alueen id: </p>
+                <input type="text" placeholder="Id..." name="etsittavaAlueDaoTestId"/>
+                <br/><br/>
+            </div>
+            <div id="saveAlue">
+                <p>Uuden alueen nimi: </p>
+                <input type="text" placeholder="Id..." name="lisattavaAlueDaoTestNimi"/>
+                <br/><br/>
+            </div>
+            
+            <div id="deleteAlue">
+                <p>Poistettavan alueen id: </p>
+                <input type="text" placeholder="Nimi..." name="poistettavaAlueDaoTestId"/>
+                <br/><br/>
+            </div>
+            
+            <input type="submit" value="Suorita" onclick="execute()"/>
+        </form>
+        
+        <div id="alueResults">
+            <h2>Results</h2>
+            <table style="border: 1px solid black; border-collapse: collapse;">
+                <tr style="border: 1px solid black; border-collapse: collapse;">
+                    <th style="border: 1px solid black; border-collapse: collapse;">Id</th>
+                    <th style="border: 1px solid black; border-collapse: collapse;">Nimi</th>
+                </tr>
+                <tr th:each="rivi: ${results}" style="border: 1px solid black; border-collapse: collapse;">
+                    <td th:text="${rivi.id}" style="border: 1px solid black; border-collapse: collapse;">Id</td>
+                    <td th:text="${rivi.nimi}" style="border: 1px solid black; border-collapse: collapse;">Nimi</td>
+                </tr>
+            </table>
+        </div>
+    </footer>-->
 </html>

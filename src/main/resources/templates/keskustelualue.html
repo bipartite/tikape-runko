@@ -17,6 +17,14 @@
         background-color: #eeeeee;
         width: 50%;
     }
+    
+    #edellinenSivu {
+        display: none;
+    }
+    
+    #seuraavaSivu{
+        display: block;
+    }
 </style>
 
 <script type="text/javascript">
@@ -27,6 +35,33 @@
     function setAddFormInvisible(){
         document.getElementById('addForm').style.display = 'none';
     }
+    
+    function navigationVisibilities(){
+        var param = window.location.search.substr(1);
+        var pair = param.split("=");
+        var pageNum = pair[1];
+        
+        var avauksia = parseInt(document.getElementById("avaukset").getElementsByTagName("tr").length) - 1;
+        
+        if(pageNum === 0){
+            document.getElementById("edellinenSivu").style.display = 'none';
+        } else if(pageNum > 0){
+            document.getElementById("edellinenSivu").style.display = 'block';
+        }
+        if(avauksia === 10){
+            document.getElementById("seuraavaSivu").style.display = 'block';
+        } else {
+            document.getElementById("seuraavaSivu").style.display = 'none';
+        }
+    }
+    
+    function getPageNumber(){
+        var param = window.location.search.substr(1);
+        var pair = param.split("=");
+        if(pair[0]==="sivu"){
+            document.getElementById("pagenumberAsc").value = parseInt(pair[1]) + 1;
+        }
+    }
 </script>
 
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
@@ -36,12 +71,22 @@
         <meta charset="utf-8" />
     </head>
 
-    <body>
+    <body onload="navigationVisibilities()">        
         <h1 th:text="${keskustelualue.nimi}"></h1>
         
         <h2>Avaukset</h2>
+        <div style="display: block;">
+            <form id="edellinenSivu" th:action="@{~/keskustelualue/{id}?sivu(id=${keskustelualue.id})}" method="GET" onsubmit="getPageNumber()">
+                <input id="pagenumberDesc" style="display: none;" name="sivu" value="0"/>
+                <input type="submit" value="Edellinen sivu"/>
+            </form>
+            <form id="seuraavaSivu" th:action="@{~/keskustelualue/{id}?sivu(id=${keskustelualue.id})}" method="GET" onsubmit="getPageNumber()">
+                <input id="pagenumberAsc" style="display: none;" name="sivu" value="0"/>
+                <input type="submit" value="Seuraava sivu"/>
+            </form>
+        </div>
         
-        <table>
+        <table id="avaukset">
             <tr>
                 <th><b>Avaus</b></th>
                 <th><b>Viesteja</b></th>
@@ -59,7 +104,7 @@
         <button onclick="setAddFormVisible()">Lisaa avaus</button>
         
         <div id="addForm" class="lisaa-avaus">
-            <form method="POST">
+            <form autocomplete="off" method="POST">
                 <input type="text" placeholder="Avauksen nimi..." name="otsikko" maxlength="50" style="width: 80%;"/><br></br>
                 <textarea placeholder="Viesti..." name="viesti" rows="10" maxlength="1000" style="width: 100%;"/><br></br>
                 <input type="text" placeholder="Nimimerkki..." name="nimimerkki" maxlength="20" style="width: 50%;"/><br></br>

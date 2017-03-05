@@ -1,8 +1,11 @@
 package tikape.runko;
 
+import java.awt.image.IndexColorModel;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -44,12 +47,12 @@ public class Main {
         KeskusteluavausDao avausDao = new KeskusteluavausDao(database);
         VastausDao vastausDao = new VastausDao(database);
 
+        HashMap indexData = new HashMap<>();
+        
         get("/", new TemplateViewRoute() {
             @Override
-            public ModelAndView handle(Request req, Response res) throws Exception {
-                HashMap map = new HashMap<>();
-                
-                List<Keskustelualue> alueet = alueDao.findAll();
+            public ModelAndView handle(Request req, Response res) throws Exception {                
+                List<Keskustelualue> alueet = alueDao.findAllOrderByName();
                 
                 // Calculate the amount of messages in each Keskustelualue and save it
                 laskeViestit(alueet);
@@ -57,9 +60,9 @@ public class Main {
                 //Find the date of the latest message
                 etsiViimeisinViesti(alueet);
                 
-                map.put("alueet", alueet);
+                indexData.put("alueet", alueet);
                 
-                return new ModelAndView(map, "index");
+                return new ModelAndView(indexData, "index");
             }
             
             public void laskeViestit(List<Keskustelualue> alueet) throws SQLException{
@@ -116,7 +119,14 @@ public class Main {
             Keskustelualue alue = alueDao.findOne(Integer.parseInt(req.params(":id")));
             map.put("keskustelualue", alue);
             
-            List<Keskusteluavaus> avaukset = avausDao.findAllFromAlue(alue.getId());
+            List<Keskusteluavaus> avaukset;
+            
+            if(req.queryParams("sivu") != null){
+                int sivu = Integer.parseInt(req.queryParams("sivu"));
+                avaukset = avausDao.findNewestWithLimitFromAlue(alue.getId(), sivu, 10);
+            } else {
+                avaukset = avausDao.findNewestWithLimitFromAlue(alue.getId(), 10);
+            }
 
             // Count the messages in every Keskusteluavaus and save the count
             for (Keskusteluavaus keskusteluavaus : avaukset) {
@@ -147,12 +157,39 @@ public class Main {
         }, new ThymeleafTemplateEngine());
         
         post("/", (req, res) -> {
-            String nimi = req.queryParams("nimi");
+            if(req.queryParams().contains("nimi")){
+                String nimi = req.queryParams("nimi");
             
-            alueDao.save(new Keskustelualue(nimi));
-            
-            res.redirect("/");
-            
+                alueDao.save(new Keskustelualue(nimi));
+
+                res.redirect("/");
+            } else if(req.queryParams().contains("etsittavaAlueDaoTestId")){
+                if(indexData.containsKey("results")) indexData.remove("results");
+                
+                int id = Integer.parseInt(req.queryParams("etsittavaAlueDaoTestId"));
+                
+                ArrayList<Keskustelualue> loydetyt = new ArrayList<Keskustelualue>();
+                loydetyt.add(alueDao.findOne(id));
+                
+                indexData.put("results", loydetyt);
+                
+                res.redirect("/");
+            } else if(req.queryParams().contains("lisattavaAlueDaoTestId")){
+                if(indexData.containsKey("results")) indexData.remove("results");
+                
+                String nimi = req.queryParams("lisattavaAlueDaoTestId");
+                alueDao.save(new Keskustelualue(nimi));
+                
+                res.redirect("/");
+            } else if(req.queryParams().contains("poistettavaAlueDaoTestId")){
+                if(indexData.containsKey("results")) indexData.remove("results");
+                
+                int id = Integer.parseInt(req.queryParams("poistettavaAlueDaoTestId"));
+                alueDao.delete(id);
+                
+                res.redirect("/");
+            }
+                        
             return null;
         });
         
@@ -169,6 +206,18 @@ public class Main {
             vastausDao.save(new Vastaus(avausId, viesti, nimimerkki));
             
             res.redirect("/keskusteluavaus/"+avausId);
+            
+            return null; 
+        });
+        
+        post("/keskusteluavaus/:id", (req, res) -> {
+           int avausId = Integer.parseInt(req.params(":id"));
+           String viesti = req.queryParams("viesti");
+           String nimimerkki = req.queryParams("nimimerkki");
+           
+           vastausDao.save(new Vastaus(avausId, viesti, nimimerkki));
+           
+           res.redirect("/keskusteluavaus/"+avausId);
             
             return null; 
         });

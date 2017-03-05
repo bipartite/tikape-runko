@@ -75,6 +75,15 @@ public class KeskusteluavausDao implements Dao<Keskusteluavaus, Integer>{
     public List<Keskusteluavaus> findAll() throws SQLException {
         return this.database.queryAndCollect("SELECT * FROM Keskusteluavaus", new KeskusteluavausCollector());
     }
+    
+    public List<Keskusteluavaus> findNewestWithLimitFromAlue(int alue, int limit) throws SQLException {
+        return this.database.queryAndCollect("SELECT * FROM Keskusteluavaus WHERE alue=" + alue + " ORDER BY id DESC LIMIT " + limit, new KeskusteluavausCollector());
+    }
+    
+    public List<Keskusteluavaus> findNewestWithLimitFromAlue(int alue, int sivu, int limit) throws SQLException {
+        int ekaId = 10*sivu;
+        return this.database.queryAndCollect("SELECT * FROM Keskusteluavaus WHERE alue=" + alue + " ORDER BY id DESC LIMIT " + ekaId + ", " + limit, new KeskusteluavausCollector());
+    }
 
     @Override
     public void delete(Integer key) throws SQLException {
