@@ -1,0 +1,59 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-4.dtd">
+<style>
+    th, td{
+        padding-left: 20px;
+    }
+    
+    #addForm {
+        display: none;
+    }
+    
+    .lisaa-alue{
+        padding: 10px;
+        background-color: #eeeeee;
+        width: fit-content;
+    }
+</style>
+
+<script type="text/javascript">
+    function setAddFormVisible(){
+        document.getElementById('addForm').style.display = 'block';
+    }
+    
+    function setAddFormInvisible(){
+        document.getElementById('addForm').style.display = 'none';
+    }
+</script>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+    <head>
+        <title>Forum</title>
+        <meta charset="utf-8" />
+    </head>
+
+    <body>
+        <table>
+            <tr>
+                <th><b>Alue</b></th>
+                <th><b>Viesteja yhteensa</b></th>
+                <th><b>Viimeisin viesti</b></th>
+            </tr>
+            <tr th:each="alue: ${alueet}">
+                <td>
+                    <a th:href="@{~/keskustelualue/{id}(id=${alue.id})}" th:text="${alue.nimi}">Otsikko</a>
+                </td>
+                <td th:text="${alue.viestimaara}">Viestimaara</td>
+                <td th:text="${alue.viimeisinViesti}">Viimeisin viesti</td>
+            </tr>
+        </table>
+        
+        <button onclick="setAddFormVisible()">Lisaa alue</button>
+        
+        <form method="POST" class="lisaa-alue" id="addForm">
+            <input type="text" name="nimi" placeholder="Alueen nimi..."/><br/>
+            <input type="submit" value="Lisaa" style="margin-left: 10px;"/>
+            <input type="button" value="Kumoa" onclick="setAddFormInvisible()" style="margin-left: 10px;"/>
+        </form>
+    </body>
+</html>
